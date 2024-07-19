@@ -1,0 +1,25 @@
+name: django-twitter-clone
+scripts:
+  database_up:
+    - cd dtc
+    - docker-compose up -d
+  database_down:
+    - cd dtc
+    - docker-compose down
+  server:
+    - cd dtc
+    - python manage.py runserver
+  makemigrations:
+    - cd dtc
+    - python manage.py makemigrations
+  migrate:
+    - cd dtc
+    - python manage.py migrate
+  shell:
+    - cd dtc
+    - python manage.py shell
+  test:
+    - cd dtc
+    - pytest
+  secret:
+    - python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
