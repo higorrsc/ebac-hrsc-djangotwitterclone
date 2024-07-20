@@ -1,7 +1,8 @@
-from django.views.generic import CreateView, ListView, RedirectView, DetailView
-from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.db.models import Q
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, ListView, RedirectView, DetailView
 from .forms import CustomUserCreationForm, PostForm
 from .models import Post, Follow
 
@@ -69,3 +70,19 @@ class ProfileView(DetailView):
         context = super().get_context_data(**kwargs)
         context["posts"] = Post.objects.filter(user=self.object).order_by("-created_at")
         return context
+
+
+class ProfileSearchView(ListView):
+    model = User
+    template_name = "search_result.html"
+    context_object_name = "users"
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        if query:
+            return User.objects.filter(
+                Q(username__icontains=query)
+                | Q(first_name__icontains=query)
+                | Q(last_name__icontains=query)
+            )
+        return User.objects.none()
