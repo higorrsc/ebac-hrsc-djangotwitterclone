@@ -1,10 +1,20 @@
 {% extends "base.html" %} 
 
+{% load crispy_forms_tags %}
+
 {% block content %}
 <div
   class="d-flex flex-column align-items-center justify-content-center w-auto p-4 border border-3 rounded-3"
   style="height: 85vh"
 >
-  POST
+  <form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="btn-group pt-2 w-100 gap-2">
+      <button type="submit" class="btn btn-light">Postar</button>
+      <button type="button" class="btn btn-light" onclick="history.back()">Voltar</button>
+    </div>
+  </form>
+  <p>{{ form.errors }}</p>
 </div>
 {% endblock %}
