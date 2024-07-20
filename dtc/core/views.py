@@ -1,8 +1,8 @@
-from django.views.generic import CreateView, ListView, RedirectView
+from django.views.generic import CreateView, ListView, RedirectView, DetailView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, PostForm
 from .models import Post, Follow
 
 
@@ -25,7 +25,7 @@ class PostsView(ListView):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ["content"]
+    form_class = PostForm
     template_name = "new_post.html"
     success_url = reverse_lazy("posts")
 
@@ -58,3 +58,14 @@ class LikePostView(LoginRequiredMixin, RedirectView):
             post.likes.add(self.request.user)
         # Redireciona para a URL sem parâmetros
         return super().get_redirect_url(*args, **kwargs)
+
+
+class ProfileView(DetailView):
+    model = User
+    template_name = "profile.html"
+    context_object_name = "user"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["posts"] = Post.objects.filter(user=self.object).order_by("-created_at")
+        return context

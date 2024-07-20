@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div
+  class="d-flex flex-column w-auto p-4 border border-3 rounded-3 overflow-auto"
+  style="height: 85vh"
+>
+<h1>Postagens de {{ user.username }}</h1>
+{% for post in posts %}
+    <div class="card w-100 mb-2">
+        <div class="card-body">
+            <p class="card-title">postado em {{ post.created_at|date}}</p>
+            <p class="card-text">{{ post.content }}</p>
+            <a href="{% url 'like_post' post_id=post.id %}" class="text-decoration-none">
+                <i class="bi bi-hand-thumbs-up-fill"></i>
+            </a>
+        </div>
+        <div class="card-footer">
+            {{ post.likes.count }} likes
+        </div>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -9,7 +9,7 @@
     <div class="card w-100 mb-2 ">
       <div class="card-body">
         <h5 class="card-title">
-          <a href="{% url 'like_post' post_id=post.id %}" class="text-decoration-none">
+          <a href="{% url 'profile' post.user.id %}" class="text-decoration-none">
             {{ post.user.username }}
           </a>
         </h5>
