@@ -1,7 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.db.models import Q
-from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, ListView, RedirectView, DetailView
 from .forms import CustomUserCreationForm, PostForm
 from .models import Post, Follow
@@ -13,7 +15,6 @@ class RegisterView(CreateView):
     success_url = reverse_lazy("login")
 
     def form_invalid(self, form):
-        # Você pode adicionar qualquer lógica adicional aqui se necessário
         return super().form_invalid(form)
 
 
@@ -36,20 +37,24 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 
 class FollowUserView(LoginRequiredMixin, RedirectView):
-    pattern_name = "profile"
+    def post(self, request, *args, **kwargs):
+        user_to_follow = get_object_or_404(User, pk=self.kwargs.get("pk"))
+        is_following = Follow.objects.filter(
+            follower=request.user, following=user_to_follow
+        ).exists()
+        if is_following:
+            Follow.objects.filter(
+                follower=request.user, following=user_to_follow
+            ).delete()
+        else:
+            Follow.objects.create(follower=request.user, following=user_to_follow)
 
-    def get_redirect_url(self, *args, **kwargs):
-        username = self.kwargs.get("username")
-        user_to_follow = User.objects.get(username=username)
-        Follow.objects.get_or_create(
-            follower=self.request.user, following=user_to_follow
+        return HttpResponseRedirect(
+            reverse("profile", kwargs={"pk": user_to_follow.pk})
         )
-        return super().get_redirect_url(*args, **kwargs)
 
 
 class LikePostView(LoginRequiredMixin, RedirectView):
-    pattern_name = "index"  # Nome da URL para redirecionamento
-
     def get_redirect_url(self, *args, **kwargs):
         post_id = self.kwargs.get("post_id")
         post = Post.objects.get(id=post_id)
@@ -57,18 +62,28 @@ class LikePostView(LoginRequiredMixin, RedirectView):
             post.likes.remove(self.request.user)
         else:
             post.likes.add(self.request.user)
-        # Redireciona para a URL sem parâmetros
-        return super().get_redirect_url(*args, **kwargs)
+        return self.request.META.get("HTTP_REFERER", reverse("posts"))
 
 
-class ProfileView(DetailView):
+class ProfileView(LoginRequiredMixin, DetailView):
     model = User
     template_name = "profile.html"
     context_object_name = "user"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.get_object()
+        following = Follow.objects.filter(follower=user)
+        followers = Follow.objects.filter(following=user)
+        is_following = Follow.objects.filter(
+            follower=self.request.user,
+            following=self.get_object(),
+        ).exists()
+        context["is_following"] = is_following
         context["posts"] = Post.objects.filter(user=self.object).order_by("-created_at")
+        context["following"] = [follow.following for follow in following]
+        context["followers"] = [follow.follower for follow in followers]
+
         return context
 
 
