@@ -1,0 +1,86 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Twitter Clone</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}" />
+    <style>
+      body {
+        transition: background-color 0.3s, color 0.3s;
+      }
+    </style>
+    <script>
+      // Immediately set the theme to avoid flickering
+      (function () {
+        const prefersDarkTheme = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        const defaultTheme = prefersDarkTheme ? "dark" : "light";
+        const storedThemePreference = localStorage.getItem(
+          "django-twitter-clone-theme"
+        );
+        const themeToApply = storedThemePreference || defaultTheme;
+        document.documentElement.setAttribute("data-bs-theme", themeToApply);
+      })();
+    </script>
+  </head>
+  <body>
+    {% include "navbar.html" %}
+    <div class="container-fluid p-2">
+      {% block content %} 
+      {% endblock %}
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Detect system theme preference
+        const prefersDarkTheme = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        // Determine default theme based on system preference
+        const defaultTheme = prefersDarkTheme ? "dark" : "light";
+        // Retrieve stored theme preference (if any)
+        const storedThemePreference = localStorage.getItem("django-twitter-clone-theme");
+        // Apply the appropriate theme
+        const themeToApply = storedThemePreference || defaultTheme;
+        document.documentElement.setAttribute("data-bs-theme", themeToApply);
+        // Update UI elements based on the applied theme (optional)
+        if (themeToApply === "dark") {
+          document.getElementById("sun").classList.add("d-none");
+          document.getElementById("moon").classList.remove("d-none");
+        } else {
+          document.getElementById("sun").classList.remove("d-none");
+          document.getElementById("moon").classList.add("d-none");
+        }
+        // Event listener for theme toggle button (optional)
+        document.getElementById("switchTheme").addEventListener("click", () => {
+          const currentTheme =
+            document.documentElement.getAttribute("data-bs-theme");
+          const newTheme = currentTheme === "dark" ? "light" : "dark";
+          // Set selected theme
+          document.documentElement.setAttribute("data-bs-theme", newTheme);
+          // Update localStorage with the new theme preference
+          localStorage.setItem("django-twitter-clone-theme", newTheme);
+          // Update UI elements based on the new theme
+          if (newTheme === "dark") {
+            document.getElementById("sun").classList.add("d-none");
+            document.getElementById("moon").classList.remove("d-none");
+          } else {
+            document.getElementById("sun").classList.remove("d-none");
+            document.getElementById("moon").classList.add("d-none");
+          }
+        });
+      });
+    </script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
+    {% block scripts %} {% endblock %}
+  </body>
+</html>
